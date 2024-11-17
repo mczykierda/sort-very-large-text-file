@@ -20,6 +20,7 @@ class FileGenerator(IRecordsGenerator recordsGenerator, ILogger<FileGenerator> l
             var records = recordsGenerator.CreateRecords(textSize, 
                                                         textDuplicationFactor, 
                                                         numberOfRecordsToGenerate: 500);
+
             foreach (var record in records)
             {
                 if (numberOfSavedRows > estimatedNumberOfRows)
@@ -34,7 +35,13 @@ class FileGenerator(IRecordsGenerator recordsGenerator, ILogger<FileGenerator> l
     }
 
     static long GetEstimatedNumberOfRows(long fileSize, long textSize)
-        => fileSize / (textSize + 2 + 8); //8 - statistically average length of integer string representation
+    {
+        const int separatorSize = 2;
+        const int averageCountOfDigitsInInteger = 8; //statistically speaking
+
+        //row format is '<number>. <text>'
+        return fileSize / (averageCountOfDigitsInInteger + separatorSize + textSize);
+    }
 
     static StreamWriter CreateStreamWriter(FileInfo fileInfo)
     {
