@@ -36,15 +36,28 @@ class Program
             () => 1024 * 1024 * 1024,
             $"Approximate size of file in bytes.");
 
-        var textSizeOption = new Option<long>(
+        var textSizeOption = new Option<int>(
             ["--text-size", "-ts"],
             () => 1024,
             description: "Number of bytes for text part of each row.");
 
         var duplicationFactorOption = new Option<int>(
             ["--duplication-factor", "-df"],
-            () => 1,
-            description: "Text duplication level: 0 - no duplications, then the larger number the more duplicated rows (the text part)");
+            () => 5,
+            description: "Text duplication level: 0 - no duplications, then the larger number the duplicated rows (the text part)");
+
+        duplicationFactorOption.AddValidator(x =>
+        {
+            if(x.GetValueForOption(duplicationFactorOption) < 0)
+            {
+                x.ErrorMessage = "Duplication factor cannot be negative";
+            }
+
+            if (x.GetValueForOption(duplicationFactorOption) >100)
+            {
+                x.ErrorMessage = "Duplication factor cannot be larger than 100";
+            }
+        });
 
         var command = new Command("generate", "Generates the very large text file.")
         {

@@ -2,5 +2,7 @@
 
 public interface IFileGenerator
 {
-    Task GenerateFile(FileInfo fileInfo, long fileSize, long textSize, int textDuplicationFactor);
+    Task GenerateFile(FileInfo fileInfo, long fileSize, int textSize, int textDuplicationFactor);
 }
+
+
