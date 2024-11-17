@@ -12,7 +12,7 @@ class FileGenerator(IRecordsGenerator recordsGenerator, ILogger<FileGenerator> l
         logger.LogInformation($"File size to create: {fileSize} B");
         logger.LogInformation($"Number of rows to create: {estimatedNumberOfRows}");
 
-        using var streamWriter = new StreamWriter(fileInfo.FullName, false, Encoding.ASCII, 128 * 1024);
+        using var streamWriter = CreateStreamWriter(fileInfo);
         
         var numberOfSavedRows = 0L;
         while(numberOfSavedRows < estimatedNumberOfRows) 
@@ -35,4 +35,10 @@ class FileGenerator(IRecordsGenerator recordsGenerator, ILogger<FileGenerator> l
 
     static long GetEstimatedNumberOfRows(long fileSize, long textSize)
         => fileSize / (textSize + 2 + 8); //8 - statistically average length of integer string representation
+
+    static StreamWriter CreateStreamWriter(FileInfo fileInfo)
+    {
+        var bufferSize = 128 * 1024;
+        return new StreamWriter(fileInfo.FullName, false, Encoding.UTF8, bufferSize);
+    }
 }
