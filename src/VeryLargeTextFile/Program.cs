@@ -4,6 +4,7 @@ using Scrutor;
 using Microsoft.Extensions.Logging;
 using VeryLargeTextFile.Generator;
 using VeryLargeTextFile.Sorter;
+using VeryLargeTextFile.Sorter.FileSplitting;
 
 namespace VeryLargeTextFile;
 
@@ -72,13 +73,14 @@ class Program
             {
                 try
                 {
-                    var generator = serviceProvider.GetRequiredService<IFileGenerator>();
+                    using var scope = serviceProvider.CreateScope();
+                    var generator = scope.ServiceProvider.GetRequiredService<IFileGenerator>();
                     await generator.GenerateFile(fileInfo, fileSize, textSize, duplicationFactor);
                     logger.LogDebug("Program finished");
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Program failed");
+                    logger.LogError(ex, "Generation failed");
                 }
             },
             fileOption,
@@ -93,7 +95,7 @@ class Program
     static Command CreateSortCommand(ServiceProvider serviceProvider, ILogger logger)
     {
         var inputFileOption = new Option<FileInfo>(
-            ["--input", "-i"],
+            ["--file", "-f"],
             "The very large text file to sort.")
         {
             IsRequired = true,
@@ -101,33 +103,47 @@ class Program
 
         var outputFileOption = new Option<FileInfo>(
             ["--output", "-o"],
-            "The sorted very large text file to save.")
-        {
-            IsRequired = true
-        };
+            "The sorted very large text file to save. Default: the input file with extension *.sorted");
+
+        var splittedFileSizeOption = new Option<int>(
+            ["--splitted-file-size", "-sfs"],
+            () => 100 * 1024 * 1024,
+            "The size of each splitted temporary file");
 
         var command = new Command("sort", "Sorts the very large text file.")
         {
             inputFileOption,
             outputFileOption,
+            splittedFileSizeOption
         };
 
         command.SetHandler(
-            async (inputFileInfo, outputFileInfo) =>
+            async (inputFileInfo, outputFileInfo, splittedFileSize) =>
             {
+
                 try
                 {
-                    var sorter = serviceProvider.GetRequiredService<IFileSorter>();
-                    await sorter.SortFile(inputFileInfo, outputFileInfo);
+                    var splittedFilesLocation = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                    var config = new SortingConfig(
+                        new InputFileSplitterConfig(splittedFileSize, splittedFilesLocation)
+                        );
+                    
+                    outputFileInfo ??= new FileInfo($"{inputFileInfo.FullName}.sorted");
+
+                    using var scope = serviceProvider.CreateScope();
+                    var sorter = scope.ServiceProvider.GetRequiredService<IFileSorter>();
+                    await sorter.SortFile(inputFileInfo, outputFileInfo, config, CancellationToken.None);
+
                     logger.LogDebug("Program finished");
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Program failed");
+                    logger.LogError(ex, "Sorting failed");
                 }
             },
             inputFileOption,
-            outputFileOption
+            outputFileOption,
+            splittedFileSizeOption
             );
 
         return command;

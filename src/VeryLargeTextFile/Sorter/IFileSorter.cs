@@ -2,5 +2,5 @@
 
 public interface IFileSorter
 {
-    Task SortFile(FileInfo inputFileInfo, FileInfo outputFileInfo);
+    Task SortFile(FileInfo inputFileInfo, FileInfo outputFileInfo, SortingConfig config, CancellationToken cancellationToken);
 }

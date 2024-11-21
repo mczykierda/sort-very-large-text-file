@@ -4,4 +4,3 @@ public interface IRandomTextGenerator
 {
     string GenerateRandomText(int length);
 }
-

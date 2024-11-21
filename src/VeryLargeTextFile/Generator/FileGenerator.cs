@@ -12,24 +12,33 @@ class FileGenerator(IRecordsGenerator recordsGenerator, ILogger<FileGenerator> l
         logger.LogInformation($"File size to create: {fileSize} B");
         logger.LogInformation($"Number of rows to create: {estimatedNumberOfRows}");
 
-        using var streamWriter = CreateStreamWriter(fileInfo);
-        
+        await using var streamWriter = CreateStreamWriter(fileInfo);
+
         var numberOfSavedRows = 0L;
-        while(numberOfSavedRows < estimatedNumberOfRows) 
+        while (numberOfSavedRows < estimatedNumberOfRows)
         {
-            var records = recordsGenerator.CreateRecords(textSize, 
-                                                        textDuplicationFactor, 
+            var records = recordsGenerator.CreateRecords(textSize,
+                                                        textDuplicationFactor,
                                                         numberOfRecordsToGenerate: 500);
 
             foreach (var record in records)
             {
-                if (numberOfSavedRows > estimatedNumberOfRows)
+                if (numberOfSavedRows < estimatedNumberOfRows)
+                {
+                    await streamWriter.WriteAsync($"{record}{Environment.NewLine}");
+                    ++numberOfSavedRows;
+                }
+                else if(numberOfSavedRows == estimatedNumberOfRows)
+                {
+                    await streamWriter.WriteAsync(record.ToString()); //no newline at the very end of file
+                    ++numberOfSavedRows;
+                }
+                else
                 {
                     break;
                 }
-                await streamWriter.WriteLineAsync(record.ToString());
-                ++numberOfSavedRows;
             }
+
             logger.LogDebug($"{numberOfSavedRows} / {estimatedNumberOfRows} ({(numberOfSavedRows * 100.0 / estimatedNumberOfRows):0.##\\%})");
         }
     }
