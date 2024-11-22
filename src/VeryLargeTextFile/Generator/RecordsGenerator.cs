@@ -1,6 +1,10 @@
 ﻿namespace VeryLargeTextFile.Generator;
 
-class RecordsGenerator(IRandomTextGenerator randomTextGenerator, IRecordsDuplicator duplicator) : IRecordsGenerator
+class RecordsGenerator(
+    IRandomTextGenerator randomTextGenerator, 
+    IRecordsDuplicator duplicator
+    ) 
+    : IRecordsGenerator
 {
     static readonly Random _random = new();
 

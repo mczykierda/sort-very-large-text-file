@@ -1,4 +1,5 @@
-﻿using VeryLargeTextFile.Sorter.FileSplitting;
+﻿using Microsoft.Extensions.Logging;
+using VeryLargeTextFile.Sorter.FileSplitting;
 using VeryLargeTextFile.Utilities;
 
 namespace VeryLargeTextFile.Sorter.SplittedFilesSorting;
@@ -6,12 +7,14 @@ namespace VeryLargeTextFile.Sorter.SplittedFilesSorting;
 class SplittedFileSorter(
     IInputFileStreamFactory inputFileStreamFactory,
     IOutputFileStreamFactory outputFileStreamFactory,
-    IComparer<string> comparer
+    IComparer<string> comparer,
+    ILogger<SplittedFileSorter> logger
     ) : ISplittedFileSorter
 {
     public async Task SortFileAndSaveAs(SplittedFile splittedFile, FileInfo outputFileInfo, string[] rowsBuffer, CancellationToken cancellationToken)
     {
-        
+        logger.LogDebug($"Sorting: {splittedFile.FileInfo.Name} => {outputFileInfo.Name}");
+
         using var streamReader = new StreamReader(inputFileStreamFactory.CreateInputStream(splittedFile.FileInfo));
         var counter = 0;
         while (!streamReader.EndOfStream)
@@ -19,7 +22,12 @@ class SplittedFileSorter(
             rowsBuffer[counter++] = (await streamReader.ReadLineAsync(cancellationToken))!;
         }
 
+        logger.LogDebug($"Input file read: {splittedFile.FileInfo.Name}");
+
         Array.Sort(rowsBuffer, comparer);
+
+        logger.LogDebug($"Data sorted");
+
 
         await using var streamWriter = new StreamWriter(outputFileStreamFactory.CreateOutputStream(outputFileInfo));
         bool firstLoop = true;
@@ -36,6 +44,10 @@ class SplittedFileSorter(
             await streamWriter.WriteAsync(row);
         }
 
+        logger.LogDebug($"Output file created: {outputFileInfo.Name}");
+
         Array.Clear(rowsBuffer, 0, rowsBuffer.Length);
+
+        logger.LogDebug($"Rows buffer zero-ed, ready for new input file");
     }
 }

@@ -3,7 +3,11 @@ using VeryLargeTextFile.Sorter.FileSplitting;
 
 namespace VeryLargeTextFile.Sorter.SplittedFilesSorting;
 
-class SplittedFilesSorter(ISplittedFileSorter sorter, ILogger<SplittedFilesSorter> logger) : ISplittedFilesSorter
+class SplittedFilesSorter(
+    ISplittedFileSorter sorter, 
+    ILogger<SplittedFilesSorter> logger
+    ) 
+    : ISplittedFilesSorter
 {
     public async Task<IReadOnlyCollection<FileInfo>> SortFilesAndSave(SplittingResult splitting, CancellationToken cancellationToken)
     {
@@ -13,8 +17,6 @@ class SplittedFilesSorter(ISplittedFileSorter sorter, ILogger<SplittedFilesSorte
 
         foreach (var splittedFile in splitting.Files)
         {
-            logger.LogDebug($"Sorting {splittedFile.FileInfo.Name}");
-            
             var outputFile = new FileInfo(GetOutputFileName(splittedFile.FileInfo));
             await sorter.SortFileAndSaveAs(splittedFile, outputFile, rowsBuffer, cancellationToken);
 

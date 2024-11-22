@@ -1,10 +1,13 @@
 ﻿namespace VeryLargeTextFile.Sorter.Merging;
 
-public class SortedFilesQueue(IEnumerable<FileInfo> initialSortedFiles, MergeConfig config)
+public class SortedFilesQueue(
+    IEnumerable<FileInfo> initialSortedFiles, 
+    MergeConfig config
+    )
 {
     readonly Queue<FileInfo> _files = new(initialSortedFiles);
 
-    public IEnumerable<FileInfo> GetNextBatchOfFilesToMerge()
+    public IReadOnlyCollection<FileInfo> GetNextBatchOfFilesToMerge()
     {
         if (_files.Count > config.FileCountPerRun * 2)
         {
@@ -20,7 +23,7 @@ public class SortedFilesQueue(IEnumerable<FileInfo> initialSortedFiles, MergeCon
         }
     }
 
-    IEnumerable<FileInfo> Dequeue(int number, bool takeAll = false)
+    IReadOnlyCollection<FileInfo> Dequeue(int number, bool takeAll = false)
     {
         var result = new List<FileInfo>();
         while (_files.Count > 0)

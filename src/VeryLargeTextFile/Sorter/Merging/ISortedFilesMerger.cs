@@ -2,5 +2,5 @@
 
 public interface ISortedFilesMerger
 {
-    Task<FileInfo> MergeFiles(IEnumerable<FileInfo> initialSortedFiles, MergeConfig config, CancellationToken cancellationToken);
+    Task<FileInfo> MergeFiles(IReadOnlyCollection<FileInfo> initialSortedFiles, MergeConfig config, CancellationToken cancellationToken);
 }

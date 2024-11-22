@@ -2,7 +2,8 @@
 
 namespace VeryLargeTextFile.Generator;
 
-class RandomTextGeneratorUsingGuids : IRandomTextGenerator
+class RandomTextGeneratorUsingGuids 
+    : IRandomTextGenerator
 {
     public string GenerateRandomText(int length)
     {

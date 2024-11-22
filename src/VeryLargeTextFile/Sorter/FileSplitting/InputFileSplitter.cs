@@ -1,10 +1,14 @@
-﻿using VeryLargeTextFile.Utilities;
+﻿using Microsoft.Extensions.Logging;
+using VeryLargeTextFile.Utilities;
 
 namespace VeryLargeTextFile.Sorter.FileSplitting;
 
-class InputFileSplitter(IInputFileStreamFactory inputFileStreamFactory,
-                        ITempFolderOperations tempFolder,
-                        IOutputFileStreamFactory outputFileStreamFactory) : IInputFileSplitter
+class InputFileSplitter(
+    IInputFileStreamFactory inputFileStreamFactory,
+    ITempFolderOperations tempFolder,
+    IOutputFileStreamFactory outputFileStreamFactory,
+    ILogger<InputFileSplitter> logger
+    ) : IInputFileSplitter
 {
     public async Task<SplittingResult> SplitInputFileIntoSmallerFilesAndSortThem(FileInfo inputFileInfo, InputFileSplitterConfig config, CancellationToken cancellationToken)
     {
@@ -16,6 +20,8 @@ class InputFileSplitter(IInputFileStreamFactory inputFileStreamFactory,
 
         await using var inputStream = inputFileStreamFactory.CreateInputStream(inputFileInfo);
 
+        logger.LogDebug("Creating splitted files...");
+
         while (!inputStream.EndOfStream())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -26,12 +32,18 @@ class InputFileSplitter(IInputFileStreamFactory inputFileStreamFactory,
             await using var outputStream = outputFileStreamFactory.CreateOutputStream(splittedFileInfo);
 
             await buffer.SaveToStream(outputStream, cancellationToken);
-            result.Add(new SplittedFile(splittedFileInfo, buffer.RecordsCount));
+
+            var splittedFile = new SplittedFile(splittedFileInfo, buffer.RecordsCount);
+            logger.LogDebug($"Splitted file created: {splittedFile.FileInfo.Name}, size: {splittedFile.FileInfo.Length}, records: {splittedFile.RecordCount}");
+
+            result.Add(splittedFile);
 
             buffer.Clear();
             currentFileNumber++;
         }
-
-        return new SplittingResult(result);
+        var splittingResult = new SplittingResult(result);
+        logger.LogDebug($"Splitting completed, max number of rows detected: {splittingResult.MaxRecordCount}");
+        
+        return splittingResult;
     }
 }

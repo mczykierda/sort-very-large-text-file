@@ -13,18 +13,14 @@ class Program
 {
     static async Task<int> Main(string[] args)
     {
-        var serviceProvider = GetServiceProvider();
-        var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("Program");
-
         var rootCommand = new RootCommand("Generates or sorts a very large text file");
-        rootCommand.AddCommand(CreateGenerateCommand(serviceProvider, logger));
-        rootCommand.AddCommand(CreateSortCommand(serviceProvider, logger));
+        rootCommand.AddCommand(CreateGenerateCommand());
+        rootCommand.AddCommand(CreateSortCommand());
 
         return await rootCommand.InvokeAsync(args);
     }
 
-    static Command CreateGenerateCommand(ServiceProvider serviceProvider, ILogger logger)
+    static Command CreateGenerateCommand()
     {
         var fileOption = new Option<FileInfo>(
             ["--file", "-f"],
@@ -48,6 +44,11 @@ class Program
             () => 5,
             description: "Text duplication level: 0 - no duplications, then the larger number the duplicated rows (the text part)");
 
+        var verboseOption = new Option<bool>(
+            ["--verbose", "-v"],
+            () => false,
+            description: "Verbose output to the console");
+
         duplicationFactorOption.AddValidator(x =>
         {
             if(x.GetValueForOption(duplicationFactorOption) < 0)
@@ -66,12 +67,15 @@ class Program
             fileOption,
             fileSizeOption,
             textSizeOption,
-            duplicationFactorOption
+            duplicationFactorOption,
+            verboseOption
         };
 
         command.SetHandler(
-            async (fileInfo, fileSize, textSize, duplicationFactor) =>
+            async (fileInfo, fileSize, textSize, duplicationFactor, verbose) =>
             {
+                var (serviceProvider, logger) = GetServiceProvider(verbose);
+
                 try
                 {
                     using var scope = serviceProvider.CreateScope();
@@ -87,13 +91,14 @@ class Program
             fileOption,
             fileSizeOption,
             textSizeOption,
-            duplicationFactorOption
+            duplicationFactorOption,
+            verboseOption
             );
 
         return command;
     }
 
-    static Command CreateSortCommand(ServiceProvider serviceProvider, ILogger logger)
+    static Command CreateSortCommand()
     {
         var inputFileOption = new Option<FileInfo>(
             ["--file", "-f"],
@@ -108,7 +113,7 @@ class Program
 
         var splittedFileSizeOption = new Option<int>(
             ["--splitted-file-size", "-sfs"],
-            () => 200 * 1024 * 1024,
+            () => 100 * 1024 * 1024,
             "The size of each splitted temporary file");
 
         var mergeRunFileCountOption = new Option<int>(
@@ -121,18 +126,25 @@ class Program
             () => false,
             "Overwrites the output file if it already exists");
 
+        var verboseOption = new Option<bool>(
+            ["--verbose", "-v"],
+            () => false,
+            description: "Verbose output to the console");
+
         var command = new Command("sort", "Sorts the very large text file.")
         {
             inputFileOption,
             outputFileOption,
             splittedFileSizeOption,
             mergeRunFileCountOption,
-            overwriteOutputFileOption
+            overwriteOutputFileOption,
+            verboseOption
         };
 
         command.SetHandler(
-            async (inputFileInfo, outputFileInfo, splittedFileSize, mergeRunFileCount, overwriteOutputFile) =>
+            async (inputFileInfo, outputFileInfo, splittedFileSize, mergeRunFileCount, overwriteOutputFile, verbose) =>
             {
+                var (serviceProvider, logger) = GetServiceProvider(verbose);
 
                 try
                 {
@@ -160,20 +172,25 @@ class Program
             outputFileOption,
             splittedFileSizeOption,
             mergeRunFileCountOption,
-            overwriteOutputFileOption
+            overwriteOutputFileOption,
+            verboseOption
             );
 
         return command;
     }
 
-    static ServiceProvider GetServiceProvider()
+    static (ServiceProvider,ILogger) GetServiceProvider(bool verboseLogging)
     {
         var services = new ServiceCollection();
         services.AddLogging(builder => builder
                                         .AddFilter("Microsoft", LogLevel.Warning)
                                         .AddFilter("System", LogLevel.Warning)
-                                        .SetMinimumLevel(LogLevel.Trace)
-                                        .AddConsole());
+                                        .SetMinimumLevel(verboseLogging ? LogLevel.Trace : LogLevel.Warning)
+                                        .AddSimpleConsole(x => {
+                                            x.SingleLine = true;
+                                            x.TimestampFormat = "HH:mm:ss.fff ";
+                                            x.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
+                                        }));
 
         services.Scan(scan => scan.FromCallingAssembly()
                                       .AddClasses(classes => classes.Where(x => !typeof(Exception).IsAssignableFrom(x)))
@@ -182,6 +199,10 @@ class Program
                                       .WithScopedLifetime());
 
         var serviceProvider = services.BuildServiceProvider();
-        return serviceProvider;
+
+        var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Program");
+
+        return (serviceProvider, logger);
     }
 }

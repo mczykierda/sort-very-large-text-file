@@ -1,12 +1,16 @@
-﻿using System.Collections;
-using VeryLargeTextFile.Utilities;
+﻿using VeryLargeTextFile.Utilities;
 
 namespace VeryLargeTextFile.Sorter.Merging.SingleRun;
 
-public class File(FileInfo fileInfo, IInputFileStreamFactory inputFileStreamFactory, IFileOperations fileOperations)
+public class File(
+    FileInfo fileInfo, 
+    IInputFileStreamFactory inputFileStreamFactory, 
+    IFileOperations fileOperations
+    )
     : IDisposable
 {
     readonly StreamReader _streamReader = new(inputFileStreamFactory.CreateInputStream(fileInfo));
+    public FileInfo FileInfo => fileInfo;
 
     public bool IsFullyProcessed => _streamReader.EndOfStream;
 

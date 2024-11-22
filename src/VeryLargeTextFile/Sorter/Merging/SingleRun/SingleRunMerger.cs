@@ -1,24 +1,32 @@
-﻿using VeryLargeTextFile.Utilities;
+﻿using Microsoft.Extensions.Logging;
+using VeryLargeTextFile.Utilities;
 
 namespace VeryLargeTextFile.Sorter.Merging.SingleRun;
 
-class SingleRunMerger(IInputFileStreamFactory inputFileStreamFactory,
+class SingleRunMerger(
+    IInputFileStreamFactory inputFileStreamFactory,
     ITempFolderOperations tempFolder,
     IFileOperations fileOperations,
     IOutputFileStreamFactory outputFileStreamFactory,
-    IComparer<string> comparer
-    ) : ISingleRunMerger
+    IComparer<string> comparer,
+    ILogger<SingleRunMerger> logger
+    ) 
+    : ISingleRunMerger
 {
-    public async Task<FileInfo> MergeFiles(IEnumerable<FileInfo> sortedFiles, int mergeRunCounter, CancellationToken cancellationToken)
+    public async Task<FileInfo> MergeFiles(IReadOnlyCollection<FileInfo> sortedFiles, int mergeRunCounter, CancellationToken cancellationToken)
     {
+        logger.LogDebug($"Merging run {mergeRunCounter}, files to merge: {sortedFiles.Count}");
+
         using var filesList = await CreateFilesList(sortedFiles);
+
         var mergedFileInfo = tempFolder.GetFileInfoForMergedFile(mergeRunCounter);
         using var outputWriter = new StreamWriter(outputFileStreamFactory.CreateOutputStream(mergedFileInfo));
+        logger.LogDebug($"Writing merged data to: {mergedFileInfo.Name}");
 
         var firstLoop = true;
         while (filesList.HasAnyFilesToProcess)
         {
-            filesList.Sort(); //for single file - does nothing
+            filesList.Sort(); //for single file does nothing
 
             if (firstLoop)
             {
@@ -33,6 +41,7 @@ class SingleRunMerger(IInputFileStreamFactory inputFileStreamFactory,
             
             if (filesList.Head.IsFullyProcessed)
             {
+                logger.LogDebug($"Input file {filesList.Head.FileInfo.Name} is fully processed, removing it.");
                 filesList.RemoveHeadFile();
             }
             else
@@ -41,6 +50,7 @@ class SingleRunMerger(IInputFileStreamFactory inputFileStreamFactory,
             }
         }
 
+        logger.LogDebug($"Merge completed: {mergedFileInfo.Name}, size: {mergedFileInfo.Length}");
         return mergedFileInfo;
     }
 

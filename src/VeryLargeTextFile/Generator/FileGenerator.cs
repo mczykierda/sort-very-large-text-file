@@ -1,12 +1,19 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text;
+using VeryLargeTextFile.Utilities;
 
 namespace VeryLargeTextFile.Generator;
 
-class FileGenerator(IRecordsGenerator recordsGenerator, ILogger<FileGenerator> logger) : IFileGenerator
+class FileGenerator(
+    IRecordsGenerator recordsGenerator, 
+    ILogger<FileGenerator> logger
+    ) 
+    : IFileGenerator
 {
     public async Task GenerateFile(FileInfo fileInfo, long fileSize, int textSize, int textDuplicationFactor)
     {
+        using var executionTimer = new ExecutionTimer(logger, $"Generating file {fileInfo.Name}");
+
         var estimatedNumberOfRows = GetEstimatedNumberOfRows(fileSize, textSize);
 
         logger.LogInformation($"File size to create: {fileSize} B");

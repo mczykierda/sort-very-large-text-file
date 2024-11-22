@@ -2,7 +2,7 @@
   "profiles": {
     "VeryLargeTextFile": {
       "commandName": "Project",
-      "commandLineArgs": "sort -f aaa.txt -oof"
+      "commandLineArgs": "sort -f aaa.txt -oof -v"
     }
   }
 }

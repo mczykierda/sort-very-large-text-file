@@ -1,6 +1,6 @@
 ﻿namespace VeryLargeTextFile.Sorter.FileSplitting;
 
-public record SplittingResult(IEnumerable<SplittedFile> Files)
+public record SplittingResult(IReadOnlyCollection<SplittedFile> Files)
 {
-    public int MaxRecordCount => Files.Max(x => x.RecordCount);
+    public int MaxRecordCount { get; } = Files.Max(x => x.RecordCount);
 }

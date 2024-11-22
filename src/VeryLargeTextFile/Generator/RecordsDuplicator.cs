@@ -1,6 +1,7 @@
 ﻿namespace VeryLargeTextFile.Generator;
 
-class RecordsDuplicator : IRecordsDuplicator
+class RecordsDuplicator 
+    : IRecordsDuplicator
 {
     static readonly Random _random = new();
 

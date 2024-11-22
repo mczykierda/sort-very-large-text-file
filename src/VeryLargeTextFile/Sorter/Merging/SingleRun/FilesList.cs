@@ -1,6 +1,9 @@
 ﻿namespace VeryLargeTextFile.Sorter.Merging.SingleRun;
 
-public class FilesList(int capacity, IComparer<string> comparer)
+public class FilesList(
+    int capacity, 
+    IComparer<string> comparer
+    )
     : IDisposable
 {
     readonly List<File> _list = new(capacity);

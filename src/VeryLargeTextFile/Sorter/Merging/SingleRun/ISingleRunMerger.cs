@@ -2,5 +2,5 @@
 
 public interface ISingleRunMerger
 {
-    Task<FileInfo> MergeFiles(IEnumerable<FileInfo> files, int mergeRunCounter, CancellationToken cancellationToken);
+    Task<FileInfo> MergeFiles(IReadOnlyCollection<FileInfo> files, int mergeRunCounter, CancellationToken cancellationToken);
 }
