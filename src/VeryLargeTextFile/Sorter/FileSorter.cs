@@ -1,13 +1,17 @@
 ﻿
 using Microsoft.Extensions.Logging;
 using VeryLargeTextFile.Sorter.FileSplitting;
+using VeryLargeTextFile.Sorter.Merging;
 using VeryLargeTextFile.Sorter.SplittedFilesSorting;
+using VeryLargeTextFile.Utilities;
 
 namespace VeryLargeTextFile.Sorter;
 
 class FileSorter(IInputFileSplitter inputFileSplitter, 
     ISplittedFileSorter fileSorter,
     ISplittedFilesSorter filesSorter,
+    ISortedFilesMerger merger,
+    IFileOperations fileOperations,
     ILogger<FileSorter> logger) : IFileSorter
 {
     public async Task SortFile(FileInfo inputFileInfo, FileInfo outputFileInfo, SortingConfig config, CancellationToken cancellationToken)
@@ -19,7 +23,8 @@ class FileSorter(IInputFileSplitter inputFileSplitter,
             return;
         }
         var sortedFiles = await filesSorter.SortFilesAndSave(splitting, cancellationToken);
-
+        var mergedFileInfo = await merger.MergeFiles(sortedFiles, config.Merging, cancellationToken);
+        fileOperations.Move(mergedFileInfo, outputFileInfo, config.OverwriteOutputFile);
 
         logger.LogDebug("Sorted :)");
     }

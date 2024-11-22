@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using VeryLargeTextFile.Generator;
 using VeryLargeTextFile.Sorter;
 using VeryLargeTextFile.Sorter.FileSplitting;
+using VeryLargeTextFile.Sorter.Merging;
 
 namespace VeryLargeTextFile;
 
@@ -107,25 +108,39 @@ class Program
 
         var splittedFileSizeOption = new Option<int>(
             ["--splitted-file-size", "-sfs"],
-            () => 100 * 1024 * 1024,
+            () => 200 * 1024 * 1024,
             "The size of each splitted temporary file");
+
+        var mergeRunFileCountOption = new Option<int>(
+            ["--merge-run-file-count", "-mrfc"],
+            () => 10,
+            "The number of files merged together during single run of merging");
+        
+        var overwriteOutputFileOption = new Option<bool>(
+            ["--overwrite-output-file", "-oof"],
+            () => false,
+            "Overwrites the output file if it already exists");
 
         var command = new Command("sort", "Sorts the very large text file.")
         {
             inputFileOption,
             outputFileOption,
-            splittedFileSizeOption
+            splittedFileSizeOption,
+            mergeRunFileCountOption,
+            overwriteOutputFileOption
         };
 
         command.SetHandler(
-            async (inputFileInfo, outputFileInfo, splittedFileSize) =>
+            async (inputFileInfo, outputFileInfo, splittedFileSize, mergeRunFileCount, overwriteOutputFile) =>
             {
 
                 try
                 {
                     var splittedFilesLocation = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                     var config = new SortingConfig(
-                        new InputFileSplitterConfig(splittedFileSize, splittedFilesLocation)
+                        new InputFileSplitterConfig(splittedFileSize, splittedFilesLocation),
+                        new MergeConfig(mergeRunFileCount),
+                        overwriteOutputFile
                         );
                     
                     outputFileInfo ??= new FileInfo($"{inputFileInfo.FullName}.sorted");
@@ -143,7 +158,9 @@ class Program
             },
             inputFileOption,
             outputFileOption,
-            splittedFileSizeOption
+            splittedFileSizeOption,
+            mergeRunFileCountOption,
+            overwriteOutputFileOption
             );
 
         return command;
@@ -162,7 +179,7 @@ class Program
                                       .AddClasses(classes => classes.Where(x => !typeof(Exception).IsAssignableFrom(x)))
                                       .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                                       .AsImplementedInterfaces()
-                                      .WithTransientLifetime());
+                                      .WithScopedLifetime());
 
         var serviceProvider = services.BuildServiceProvider();
         return serviceProvider;

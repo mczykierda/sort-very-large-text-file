@@ -3,13 +3,12 @@
 namespace VeryLargeTextFile.Sorter.FileSplitting;
 
 class InputFileSplitter(IInputFileStreamFactory inputFileStreamFactory,
-                        IInputFileSplitterConfigurator configurator,
-                        ISplittedFileInfoFactory splittedFileInfoFactory,
+                        ITempFolderOperations tempFolder,
                         IOutputFileStreamFactory outputFileStreamFactory) : IInputFileSplitter
 {
     public async Task<SplittingResult> SplitInputFileIntoSmallerFilesAndSortThem(FileInfo inputFileInfo, InputFileSplitterConfig config, CancellationToken cancellationToken)
     {
-        configurator.Configure(config);
+        tempFolder.Create(config);
 
         var result = new List<SplittedFile>();
         var buffer = new Buffer(config);
@@ -23,8 +22,7 @@ class InputFileSplitter(IInputFileStreamFactory inputFileStreamFactory,
 
             buffer.ReadFromStream(inputStream);
 
-            var splittedFileInfo = splittedFileInfoFactory.GetFileInfoForSplittedFile(currentFileNumber, config);
-
+            var splittedFileInfo = tempFolder.GetFileInfoForSplittedFile(currentFileNumber);
             await using var outputStream = outputFileStreamFactory.CreateOutputStream(splittedFileInfo);
 
             await buffer.SaveToStream(outputStream, cancellationToken);
