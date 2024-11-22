@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using System.IO;
 using System.Text;
 using VeryLargeTextFile.Sorter.FileSplitting;
 
