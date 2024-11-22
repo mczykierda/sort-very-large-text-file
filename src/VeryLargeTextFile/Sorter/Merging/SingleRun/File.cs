@@ -26,6 +26,7 @@ public class File(
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         ((IDisposable)_streamReader).Dispose();
         fileOperations.Delete(fileInfo);
     }

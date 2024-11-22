@@ -1,7 +1,7 @@
 ﻿namespace VeryLargeTextFile.Sorter.Merging;
 
 public class SortedFilesQueue(
-    IEnumerable<FileInfo> initialSortedFiles, 
+    IReadOnlyCollection<FileInfo> initialSortedFiles, 
     MergeConfig config
     )
 {

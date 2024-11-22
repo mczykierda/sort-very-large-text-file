@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Text;
 using VeryLargeTextFile.Utilities;
 
 namespace VeryLargeTextFile.Generator;
 
 class FileGenerator(
     IRecordsGenerator recordsGenerator, 
+    IOutputFileStreamFactory outputFileStreamFactory,
     ILogger<FileGenerator> logger
     ) 
     : IFileGenerator
@@ -16,10 +16,10 @@ class FileGenerator(
 
         var estimatedNumberOfRows = GetEstimatedNumberOfRows(fileSize, textSize);
 
-        logger.LogInformation($"File size to create: {fileSize} B");
-        logger.LogInformation($"Number of rows to create: {estimatedNumberOfRows}");
+        logger.LogInformation("File size to create: {fileSize} B", fileSize);
+        logger.LogInformation("Number of rows to create: {estimatedNumberOfRows}", estimatedNumberOfRows);
 
-        await using var streamWriter = CreateStreamWriter(fileInfo);
+        await using var streamWriter = new StreamWriter(outputFileStreamFactory.CreateOutputStream(fileInfo));
 
         var numberOfSavedRows = 0L;
         while (numberOfSavedRows < estimatedNumberOfRows)
@@ -46,7 +46,10 @@ class FileGenerator(
                 }
             }
 
-            logger.LogDebug($"{numberOfSavedRows} / {estimatedNumberOfRows} ({(numberOfSavedRows * 100.0 / estimatedNumberOfRows):0.##\\%})");
+            logger.LogDebug("{numberOfSavedRows} / {estimatedNumberOfRows} ({percentage:0.##\\%})",
+                numberOfSavedRows,
+                estimatedNumberOfRows,
+                numberOfSavedRows * 100.0 / estimatedNumberOfRows);
         }
     }
 
@@ -57,11 +60,5 @@ class FileGenerator(
 
         //row format is '<number>. <text>'
         return fileSize / (averageCountOfDigitsInInteger + separatorSize + textSize);
-    }
-
-    static StreamWriter CreateStreamWriter(FileInfo fileInfo)
-    {
-        var bufferSize = 128 * 1024;
-        return new StreamWriter(fileInfo.FullName, false, Encoding.UTF8, bufferSize);
     }
 }

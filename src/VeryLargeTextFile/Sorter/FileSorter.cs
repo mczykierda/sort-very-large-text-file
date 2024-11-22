@@ -27,7 +27,7 @@ class FileSorter(IInputFileSplitter inputFileSplitter,
         var mergedFileInfo = await merger.MergeFiles(sortedFiles, config.Merging, cancellationToken);
 
         fileOperations.Move(mergedFileInfo, outputFileInfo, config.OverwriteOutputFile);
-        logger.LogDebug($"Final merged file: {outputFileInfo.FullName}, size: {outputFileInfo.Length}");
+        logger.LogDebug("Final merged file: {file}, size: {size}", outputFileInfo.FullName, outputFileInfo.Length);
     }
 
     async Task SortSingleFileInMemoryAndSaveAsFinalFile(SplittedFile splittedFile, FileInfo outputFileInfo, CancellationToken cancellationToken)
@@ -35,6 +35,6 @@ class FileSorter(IInputFileSplitter inputFileSplitter,
         logger.LogDebug("Single file detected after splitting step: sort it and save as output file");
         var rowsBuffer = new string[splittedFile.RecordCount];
         await fileSorter.SortFileAndSaveAs(splittedFile, outputFileInfo, rowsBuffer, cancellationToken);
-        logger.LogDebug($"Final file: {outputFileInfo.FullName}, size: {outputFileInfo.Length}");
+        logger.LogDebug("Final file: {file}, size: {size}", outputFileInfo.FullName, outputFileInfo.Length);
     }
 }

@@ -34,7 +34,10 @@ class InputFileSplitter(
             await buffer.SaveToStream(outputStream, cancellationToken);
 
             var splittedFile = new SplittedFile(splittedFileInfo, buffer.RecordsCount);
-            logger.LogDebug($"Splitted file created: {splittedFile.FileInfo.Name}, size: {splittedFile.FileInfo.Length}, records: {splittedFile.RecordCount}");
+            logger.LogDebug("Splitted file created: {file}, size: {size}, records: {count}",
+                splittedFile.FileInfo.Name,
+                splittedFile.FileInfo.Length,
+                splittedFile.RecordCount);
 
             result.Add(splittedFile);
 
@@ -42,7 +45,7 @@ class InputFileSplitter(
             currentFileNumber++;
         }
         var splittingResult = new SplittingResult(result);
-        logger.LogDebug($"Splitting completed, max number of rows detected: {splittingResult.MaxRecordCount}");
+        logger.LogDebug("Splitting completed, max number of rows detected: {count}", splittingResult.MaxRecordCount);
         
         return splittingResult;
     }

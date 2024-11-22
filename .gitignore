@@ -6,6 +6,5 @@
 /src/.vs
 /src/VeryLargeTextFile/bin/
 /src/VeryLargeTextFile/obj
-/src/VeryLargeTextFile.Tests/bin/Release/net8.0
+/src/VeryLargeTextFile.Tests/bin/
 /src/VeryLargeTextFile.Tests/obj
-/src/VeryLargeTextFile.Tests/bin/Debug/net8.0

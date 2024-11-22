@@ -13,7 +13,7 @@ class SplittedFileSorter(
 {
     public async Task SortFileAndSaveAs(SplittedFile splittedFile, FileInfo outputFileInfo, string[] rowsBuffer, CancellationToken cancellationToken)
     {
-        logger.LogDebug($"Sorting: {splittedFile.FileInfo.Name} => {outputFileInfo.Name}");
+        logger.LogDebug("Sorting: {file1} => {file2}", splittedFile.FileInfo.Name, outputFileInfo.Name);
 
         using var streamReader = new StreamReader(inputFileStreamFactory.CreateInputStream(splittedFile.FileInfo));
         var counter = 0;
@@ -22,11 +22,11 @@ class SplittedFileSorter(
             rowsBuffer[counter++] = (await streamReader.ReadLineAsync(cancellationToken))!;
         }
 
-        logger.LogDebug($"Input file read: {splittedFile.FileInfo.Name}");
+        logger.LogDebug("Input file loaded into memory");
 
         Array.Sort(rowsBuffer, comparer);
 
-        logger.LogDebug($"Data sorted");
+        logger.LogDebug($"Rows sorted");
 
 
         await using var streamWriter = new StreamWriter(outputFileStreamFactory.CreateOutputStream(outputFileInfo));
@@ -44,10 +44,10 @@ class SplittedFileSorter(
             await streamWriter.WriteAsync(row);
         }
 
-        logger.LogDebug($"Output file created: {outputFileInfo.Name}");
+        logger.LogDebug("Output file created");
 
         Array.Clear(rowsBuffer, 0, rowsBuffer.Length);
 
-        logger.LogDebug($"Rows buffer zero-ed, ready for new input file");
+        logger.LogDebug("Rows buffer zero-ed, ready for new input file");
     }
 }

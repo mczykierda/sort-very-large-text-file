@@ -15,12 +15,12 @@ class ExecutionTimer
         _logger = logger;
         _text = text;
 
-        _logger.LogInformation(_text);
+        _logger.LogInformation("{text}", _text);
         _timer.Start();
     }
     public void Dispose()
     {
         _timer.Stop();
-        _logger.LogInformation($"{_text} - completed in {_timer.Elapsed}");
+        _logger.LogInformation("{text} - completed in {elapsed}",_text, _timer.Elapsed);
     }
 }

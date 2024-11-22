@@ -15,13 +15,13 @@ class SingleRunMerger(
 {
     public async Task<FileInfo> MergeFiles(IReadOnlyCollection<FileInfo> sortedFiles, int mergeRunCounter, CancellationToken cancellationToken)
     {
-        logger.LogDebug($"Merging run {mergeRunCounter}, files to merge: {sortedFiles.Count}");
+        logger.LogDebug("Merging run {mergeRunCounter}, files to merge: {count}", mergeRunCounter, sortedFiles.Count);
 
         using var filesList = await CreateFilesList(sortedFiles);
 
         var mergedFileInfo = tempFolder.GetFileInfoForMergedFile(mergeRunCounter);
         using var outputWriter = new StreamWriter(outputFileStreamFactory.CreateOutputStream(mergedFileInfo));
-        logger.LogDebug($"Writing merged data to: {mergedFileInfo.Name}");
+        logger.LogDebug("Writing merged data to: {file}", mergedFileInfo.Name);
 
         var firstLoop = true;
         while (filesList.HasAnyFilesToProcess)
@@ -41,7 +41,7 @@ class SingleRunMerger(
             
             if (filesList.Head.IsFullyProcessed)
             {
-                logger.LogDebug($"Input file {filesList.Head.FileInfo.Name} is fully processed, removing it.");
+                logger.LogDebug("Input file {file} is fully processed, removing it from list", filesList.Head.FileInfo.Name);
                 filesList.RemoveHeadFile();
             }
             else
@@ -50,7 +50,7 @@ class SingleRunMerger(
             }
         }
 
-        logger.LogDebug($"Merge completed: {mergedFileInfo.Name}, size: {mergedFileInfo.Length}");
+        logger.LogDebug("Merge completed: {file}, size: {size}", mergedFileInfo.Name, mergedFileInfo.Length);
         return mergedFileInfo;
     }
 

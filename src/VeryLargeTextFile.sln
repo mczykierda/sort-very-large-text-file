@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35431.28
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeryLargeTextFile", "VeryLargeTextFile\VeryLargeTextFile.csproj", "{FA3BC074-8943-4E91-B92E-61DAD0405422}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VeryLargeTextFile", "VeryLargeTextFile\VeryLargeTextFile.csproj", "{FA3BC074-8943-4E91-B92E-61DAD0405422}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B6166801-6C19-4079-B034-70E40EF0DB0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeryLargeTextFile.Tests", "VeryLargeTextFile.Tests\VeryLargeTextFile.Tests.csproj", "{C4564EAC-4C6F-454D-8374-789BCF7CE974}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +19,16 @@ Global
 		{FA3BC074-8943-4E91-B92E-61DAD0405422}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA3BC074-8943-4E91-B92E-61DAD0405422}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA3BC074-8943-4E91-B92E-61DAD0405422}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4564EAC-4C6F-454D-8374-789BCF7CE974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4564EAC-4C6F-454D-8374-789BCF7CE974}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4564EAC-4C6F-454D-8374-789BCF7CE974}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4564EAC-4C6F-454D-8374-789BCF7CE974}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C4564EAC-4C6F-454D-8374-789BCF7CE974} = {B6166801-6C19-4079-B034-70E40EF0DB0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {35E8C6D9-E677-42C8-AF4A-169F06CC4C32}

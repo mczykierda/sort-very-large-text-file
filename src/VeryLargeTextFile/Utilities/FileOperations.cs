@@ -1,11 +1,22 @@
 ﻿
+using Microsoft.Extensions.Logging;
+
 namespace VeryLargeTextFile.Utilities;
 
-class FileOperations : IFileOperations
+class FileOperations(
+    ILogger<FileOperations> logger
+    ) 
+    : IFileOperations
 {
-    public void Move(FileInfo mergedFileInfo, FileInfo outputFileInfo, bool overwriteOutputFile)
-        => File.Move(mergedFileInfo.FullName, outputFileInfo.FullName, overwriteOutputFile);
+    public void Move(FileInfo source, FileInfo target, bool overwriteOutputFile)
+    {
+        File.Move(source.FullName, target.FullName, overwriteOutputFile);
+        logger.LogDebug("File {source} moved to {target}", source.FullName, target.FullName);
+    }
 
     public void Delete(FileInfo fileInfo)
-        => File.Delete(fileInfo.FullName);
+    {
+        File.Delete(fileInfo.FullName);
+        logger.LogDebug("File {file} deleted", fileInfo.Name);
+    }
 }

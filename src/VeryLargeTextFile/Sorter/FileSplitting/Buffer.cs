@@ -30,38 +30,38 @@ public class Buffer(InputFileSplitterConfig config)
             }
         }
 
-
+        if(_bytesCount == 0)
+        {
+            return;
+        }
 
         var lastRecordByte = _bytes[_bytesCount - 1];
-        if (lastRecordByte == EndOfLine)
+
+        //excellent, we have full line in the buffer, clear the finishing end of line if it's there
+        while (PossibleEndOfLineCharacters.Contains(_bytes[_bytesCount - 1]))
         {
-            //excellent, we have full line in the buffer, clear the finishing end of line if it's there
-            while (PossibleEndOfLineCharacters.Contains(_bytes[_bytesCount - 1]))
-            {
-                _bytesCount--;
-            }
+            _bytesCount--;
         }
-        else
+
+        //load some more bytes until the end of current line
+        while (lastRecordByte != EndOfLine)
         {
-            //load some more bytes until the end of current line
-            while (lastRecordByte != EndOfLine)
+            var value = stream.ReadByte();
+            if (value == -1)
             {
-                var value = stream.ReadByte();
-                if (value == -1)
-                {
-                    break;
-                }
-                lastRecordByte = (byte)value;
-                _lastRecordBytes.Add(lastRecordByte);
+                break;
             }
-            if (HasAdditionalBytesFinishingTheLastRecord)
+            lastRecordByte = (byte)value;
+            _lastRecordBytes.Add(lastRecordByte);
+        }
+        if (HasAdditionalBytesFinishingTheLastRecord)
+        {
+            RecordsCount++;
+            //we may have end of line at the end, remove it
+            while (HasAdditionalBytesFinishingTheLastRecord
+                && PossibleEndOfLineCharacters.Contains(_lastRecordBytes[^1]))
             {
-                RecordsCount++;
-                //we may have end of line at the end, remove it
-                while (PossibleEndOfLineCharacters.Contains(_lastRecordBytes[^1]))
-                {
-                    _lastRecordBytes.RemoveAt(_lastRecordBytes.Count - 1);
-                }
+                _lastRecordBytes.RemoveAt(_lastRecordBytes.Count - 1);
             }
         }
     }

@@ -10,7 +10,7 @@ class SortedFilesMerger(
 {
     public async Task<FileInfo> MergeFiles(IReadOnlyCollection<FileInfo> initialSortedFiles, MergeConfig config, CancellationToken cancellationToken)
     {
-        logger.LogDebug($"Merging {initialSortedFiles.Count} files...");
+        logger.LogDebug("Merging {count} files...", initialSortedFiles.Count);
         var queue = new SortedFilesQueue(initialSortedFiles, config);
 
         var mergeRunCounter = 0;
@@ -21,12 +21,12 @@ class SortedFilesMerger(
 
             if(!queue.HasFilesToMerge)
             {
-                logger.LogDebug($"No more files to merge. Final file: {mergedFile.Name}");
+                logger.LogDebug("No more files to merge. Final file: {file}", mergedFile.Name);
                 return mergedFile;
             }
             queue.AddMergedFile(mergedFile);
             mergeRunCounter++;
-            logger.LogDebug($"There are other files to merge with, adding {mergedFile.Name} to queue of files to merge");
+            logger.LogDebug("There are other files to merge with, adding {file} to queue of files to merge", mergedFile.Name);
         }
 
         throw new Exception("Should never happen!");

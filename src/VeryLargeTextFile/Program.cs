@@ -80,7 +80,9 @@ class Program
                 {
                     using var scope = serviceProvider.CreateScope();
                     var generator = scope.ServiceProvider.GetRequiredService<IFileGenerator>();
+
                     await generator.GenerateFile(fileInfo, fileSize, textSize, duplicationFactor);
+
                     logger.LogDebug("Program finished");
                 }
                 catch (Exception ex)
@@ -159,6 +161,7 @@ class Program
 
                     using var scope = serviceProvider.CreateScope();
                     var sorter = scope.ServiceProvider.GetRequiredService<IFileSorter>();
+
                     await sorter.SortFile(inputFileInfo, outputFileInfo, config, CancellationToken.None);
 
                     logger.LogDebug("Program finished");
@@ -188,6 +191,7 @@ class Program
                                         .SetMinimumLevel(verboseLogging ? LogLevel.Trace : LogLevel.Warning)
                                         .AddSimpleConsole(x => {
                                             x.SingleLine = true;
+                                            x.IncludeScopes = false;
                                             x.TimestampFormat = "HH:mm:ss.fff ";
                                             x.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
                                         }));

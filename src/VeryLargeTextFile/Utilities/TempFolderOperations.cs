@@ -13,12 +13,12 @@ class TempFolderOperations(ILogger<TempFolderOperations> logger) : ITempFolderOp
         _config = config;
         Directory.CreateDirectory(_config.SplittedFilesLocation);
 
-        logger.LogDebug($"Temp folder created: {_config.SplittedFilesLocation}");
+        logger.LogDebug("Temp folder created: {directory}", _config.SplittedFilesLocation);
     }
 
     public FileInfo GetFileInfoForSplittedFile(int fileNumber)
     {
-        var filename = Path.Combine(_config!.SplittedFilesLocation, $"{fileNumber}.not-sorted");
+        var filename = Path.Combine(_config!.SplittedFilesLocation, $"split-{fileNumber}.not-sorted");
         return new FileInfo(filename);
     }
 
@@ -31,6 +31,6 @@ class TempFolderOperations(ILogger<TempFolderOperations> logger) : ITempFolderOp
     public void Dispose()
     {
         Directory.Delete(_config!.SplittedFilesLocation, true);
-        logger.LogDebug($"Temp folder deleted: {_config.SplittedFilesLocation}");
+        logger.LogDebug("Temp folder deleted: {directory}", _config.SplittedFilesLocation);
     }
 }

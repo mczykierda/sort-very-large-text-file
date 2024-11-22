@@ -13,7 +13,7 @@ class SplittedFilesSorter(
     {
         var result = new List<FileInfo>();
         var rowsBuffer = new string[splitting.MaxRecordCount];
-        logger.LogDebug($"InMemory sorting buffer size: {splitting.MaxRecordCount}");
+        logger.LogDebug("InMemory sorting buffer size: {size}", splitting.MaxRecordCount);
 
         foreach (var splittedFile in splitting.Files)
         {
@@ -21,13 +21,13 @@ class SplittedFilesSorter(
             await sorter.SortFileAndSaveAs(splittedFile, outputFile, rowsBuffer, cancellationToken);
 
             splittedFile.FileInfo.Delete();
+            logger.LogDebug("{file} deleted", splittedFile.FileInfo.Name);
             
-            logger.LogDebug($"{splittedFile.FileInfo.Name} deleted");
             result.Add(outputFile);
         }
         return result;
     }
 
-    string GetOutputFileName(FileInfo input)
+    static string GetOutputFileName(FileInfo input)
         => Path.Combine(input.DirectoryName!, input.Name.Replace(input.Extension, ".sorted"));
 }
