@@ -27,5 +27,5 @@ class SplittedFilesSorter(ISplittedFileSorter sorter, ILogger<SplittedFilesSorte
     }
 
     string GetOutputFileName(FileInfo input)
-        => Path.Combine(input.DirectoryName, input.Name.Replace(input.Extension, ".sorted"));
+        => Path.Combine(input.DirectoryName!, input.Name.Replace(input.Extension, ".sorted"));
 }

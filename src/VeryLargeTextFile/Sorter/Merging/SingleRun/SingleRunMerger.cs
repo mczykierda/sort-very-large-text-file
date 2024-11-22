@@ -15,10 +15,22 @@ class SingleRunMerger(IInputFileStreamFactory inputFileStreamFactory,
         var mergedFileInfo = tempFolder.GetFileInfoForMergedFile(mergeRunCounter);
         using var outputWriter = new StreamWriter(outputFileStreamFactory.CreateOutputStream(mergedFileInfo));
 
+        var firstLoop = true;
         while (filesList.HasAnyFilesToProcess)
         {
             filesList.Sort(); //for single file - does nothing
-            await outputWriter.WriteLineAsync(filesList.Head.Value);
+
+            if (firstLoop)
+            {
+                firstLoop = false;
+            }
+            else
+            {
+                await outputWriter.WriteAsync(Environment.NewLine);
+            }
+            await outputWriter.WriteAsync(filesList.Head.Value);
+            
+            
             if (filesList.Head.IsFullyProcessed)
             {
                 filesList.RemoveHeadFile();
