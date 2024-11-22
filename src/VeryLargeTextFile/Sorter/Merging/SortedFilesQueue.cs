@@ -23,7 +23,7 @@ public class SortedFilesQueue(
         }
     }
 
-    IReadOnlyCollection<FileInfo> Dequeue(int number, bool takeAll = false)
+    List<FileInfo> Dequeue(int number, bool takeAll = false)
     {
         var result = new List<FileInfo>();
         while (_files.Count > 0)
