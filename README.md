@@ -30,27 +30,5 @@ vltf -h
 The idea follows idea of family of merge sort algorithms.
 Steps:
 - split into number of smaller files (by default around 100MB each) to temp folder
-- sort each splitted file in memory (`Array.Sort` used) and save sorted files to temp folder
+- sort each splitted file in memory (`Array.Sort` used) and save sorted files to temp folder. This step is parallized to speed up to whole process.
 - merge all files into the final file. As the number of splitted sorted files can be large, this step actually uses intermediary files (i.e. take 10 files and merge into larger, then use that larger one as an input to merging with other files)
-
-## Comments
-
-### Tests
-
-I tested what I needed to be sure of or discover.
-
-
-### Memory
-
-I tried to reuse few large collections - in `Buffer` or in `SplittedFilesSorter`
-
-### Comparer
-
-I heard on one of conferences that there is a faster version of string splitting and comparing, it uses spans.
-
-
-
-
-
-
-

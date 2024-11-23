@@ -6,6 +6,7 @@ using VeryLargeTextFile.Generator;
 using VeryLargeTextFile.Sorter;
 using VeryLargeTextFile.Sorter.FileSplitting;
 using VeryLargeTextFile.Sorter.Merging;
+using VeryLargeTextFile.Sorter.SplittedFilesSorting;
 
 namespace VeryLargeTextFile;
 
@@ -151,8 +152,9 @@ class Program
                 try
                 {
                     var splittedFilesLocation = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                    var config = new SortingConfig(
+                    var config = new FileSortingConfig(
                         new InputFileSplitterConfig(splittedFileSize, splittedFilesLocation),
+                        new SortConfig(Math.Max(Environment.ProcessorCount / 2, 2)),
                         new MergeConfig(mergeRunFileCount),
                         overwriteOutputFile
                         );

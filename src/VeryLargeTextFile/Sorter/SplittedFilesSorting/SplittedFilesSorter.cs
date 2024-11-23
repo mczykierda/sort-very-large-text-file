@@ -9,25 +9,52 @@ class SplittedFilesSorter(
     ) 
     : ISplittedFilesSorter
 {
-    public async Task<IReadOnlyCollection<FileInfo>> SortFilesAndSave(SplittingResult splitting, CancellationToken cancellationToken)
+    public IReadOnlyCollection<FileInfo> SortFilesAndSave(SplittingResult splitting, SortConfig config, CancellationToken cancellationToken)
     {
         var result = new List<FileInfo>();
-        var rowsBuffer = new string[splitting.MaxRecordCount];
-        logger.LogDebug("InMemory sorting buffer size: {size}", splitting.MaxRecordCount);
 
-        foreach (var splittedFile in splitting.Files)
+        using (var semaphore = new SemaphoreSlim(config.MaxParallelSortingTasks))
         {
-            var outputFile = new FileInfo(GetOutputFileName(splittedFile.FileInfo));
-            await sorter.SortFileAndSaveAs(splittedFile, outputFile, rowsBuffer, cancellationToken);
+            var tasks = new List<Task>(splitting.Files.Count);
+            foreach (var splittedFile in splitting.Files)
+            {
+                semaphore.Wait(cancellationToken);
 
-            splittedFile.FileInfo.Delete();
-            logger.LogDebug("{file} deleted", splittedFile.FileInfo.Name);
-            
-            result.Add(outputFile);
+                var t = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var sortedFile = await Sort(splittedFile, splitting.MaxRecordCount, cancellationToken);
+                        result.Add(sortedFile);
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }, 
+                cancellationToken);
+
+                tasks.Add(t);
+            }
+
+            Task.WaitAll([.. tasks], cancellationToken);
         }
+
         return result;
     }
 
     static string GetOutputFileName(FileInfo input)
         => Path.Combine(input.DirectoryName!, input.Name.Replace(input.Extension, ".sorted"));
+
+    async Task<FileInfo> Sort(SplittedFile splittedFile, int maxRecordCount, CancellationToken cancellationToken)
+    {
+        var outputFile = new FileInfo(GetOutputFileName(splittedFile.FileInfo));
+        var rowsBuffer = new string[maxRecordCount];
+        await sorter.SortFileAndSaveAs(splittedFile, outputFile, rowsBuffer, cancellationToken);
+
+        splittedFile.FileInfo.Delete();
+        logger.LogDebug("{file} deleted", splittedFile.FileInfo.Name);
+
+        return outputFile;
+    }
 }

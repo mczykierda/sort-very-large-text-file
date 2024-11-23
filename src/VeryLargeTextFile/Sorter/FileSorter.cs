@@ -13,7 +13,7 @@ class FileSorter(IInputFileSplitter inputFileSplitter,
     IFileOperations fileOperations,
     ILogger<FileSorter> logger) : IFileSorter
 {
-    public async Task SortFile(FileInfo inputFileInfo, FileInfo outputFileInfo, SortingConfig config, CancellationToken cancellationToken)
+    public async Task SortFile(FileInfo inputFileInfo, FileInfo outputFileInfo, FileSortingConfig config, CancellationToken cancellationToken)
     {
         using var executionTimer = new ExecutionTimer(logger, $"Sorting file {inputFileInfo.Name}");
 
@@ -23,7 +23,7 @@ class FileSorter(IInputFileSplitter inputFileSplitter,
             await SortSingleFileInMemoryAndSaveAsFinalFile(splitting.Files.Single(), outputFileInfo, cancellationToken);
             return;
         }
-        var sortedFiles = await filesSorter.SortFilesAndSave(splitting, cancellationToken);
+        var sortedFiles = filesSorter.SortFilesAndSave(splitting, config.Sorting, cancellationToken);
         var mergedFileInfo = await merger.MergeFiles(sortedFiles, config.Merging, cancellationToken);
 
         fileOperations.Move(mergedFileInfo, outputFileInfo, config.OverwriteOutputFile);

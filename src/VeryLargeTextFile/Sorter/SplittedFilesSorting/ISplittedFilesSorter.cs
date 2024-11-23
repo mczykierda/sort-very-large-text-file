@@ -4,5 +4,5 @@ namespace VeryLargeTextFile.Sorter.SplittedFilesSorting;
 
 public interface ISplittedFilesSorter
 {
-    Task<IReadOnlyCollection<FileInfo>> SortFilesAndSave(SplittingResult splitting, CancellationToken cancellationToken);
+    IReadOnlyCollection<FileInfo> SortFilesAndSave(SplittingResult splitting, SortConfig config, CancellationToken cancellationToken);
 }
