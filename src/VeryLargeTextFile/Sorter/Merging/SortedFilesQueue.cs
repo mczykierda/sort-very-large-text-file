@@ -1,11 +1,13 @@
-﻿namespace VeryLargeTextFile.Sorter.Merging;
+﻿using System.Collections.Concurrent;
+
+namespace VeryLargeTextFile.Sorter.Merging;
 
 public class SortedFilesQueue(
     IReadOnlyCollection<FileInfo> initialSortedFiles, 
     MergeConfig config
     )
 {
-    readonly Queue<FileInfo> _files = new(initialSortedFiles);
+    readonly ConcurrentQueue<FileInfo> _files = new(initialSortedFiles);
 
     public IReadOnlyCollection<FileInfo> GetNextBatchOfFilesToMerge()
     {
@@ -26,10 +28,10 @@ public class SortedFilesQueue(
     List<FileInfo> Dequeue(int number, bool takeAll = false)
     {
         var result = new List<FileInfo>();
-        while (_files.Count > 0)
+        while (!_files.IsEmpty)
         {
-            var file = _files.Dequeue();
-            result.Add(file);
+            _files.TryDequeue(out var file);
+            result.Add(file!);
             if (result.Count == number && !takeAll)
             {
                 break;
@@ -39,6 +41,7 @@ public class SortedFilesQueue(
     }
 
     public bool HasFilesToMerge => _files.Count > 0;
+    public int Count => _files.Count;
 
     public void AddMergedFile(FileInfo file)
     {

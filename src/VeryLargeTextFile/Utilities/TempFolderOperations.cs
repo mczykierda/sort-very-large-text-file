@@ -18,7 +18,7 @@ class TempFolderOperations(ILogger<TempFolderOperations> logger) : ITempFolderOp
 
     public FileInfo GetFileInfoForSplittedFile(int fileNumber)
     {
-        var filename = Path.Combine(_config!.SplittedFilesLocation, $"split-{fileNumber}.not-sorted");
+        var filename = Path.Combine(_config!.SplittedFilesLocation, $"split-{fileNumber}.sorted");
         return new FileInfo(filename);
     }
 

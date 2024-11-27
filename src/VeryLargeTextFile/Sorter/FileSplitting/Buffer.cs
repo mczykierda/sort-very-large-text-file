@@ -8,8 +8,8 @@ public class Buffer(InputFileSplitterConfig config)
     readonly byte[] _bytes = new byte[config.FileSize];
     readonly List<byte> _lastRecordBytes = new(2 * 1024);
 
-    public int RecordsCount { get; private set; }
     int _bytesCount = 0;
+    int _recordsCount = 0;
 
     public void ReadFromStream(Stream stream)
     {
@@ -18,6 +18,10 @@ public class Buffer(InputFileSplitterConfig config)
             var value = stream.ReadByte();
             if (value == -1)
             {
+                if(_bytesCount > 0)
+                {
+                    _recordsCount++;
+                }
                 break;
             }
 
@@ -26,7 +30,7 @@ public class Buffer(InputFileSplitterConfig config)
             _bytesCount++;
             if (b == EndOfLine)
             {
-                RecordsCount++;
+                _recordsCount++;
             }
         }
 
@@ -56,7 +60,7 @@ public class Buffer(InputFileSplitterConfig config)
         }
         if (HasAdditionalBytesFinishingTheLastRecord)
         {
-            RecordsCount++;
+            _recordsCount++;
             //we may have end of line at the end, remove it
             while (HasAdditionalBytesFinishingTheLastRecord
                 && PossibleEndOfLineCharacters.Contains(_lastRecordBytes[^1]))
@@ -68,19 +72,22 @@ public class Buffer(InputFileSplitterConfig config)
 
     bool HasAdditionalBytesFinishingTheLastRecord => _lastRecordBytes.Count > 0;
 
-    public async Task SaveToStream(Stream stream, CancellationToken cancellationToken)
+    public (byte[] Bytes, int RecordsCount) GetBytesAndRecordsCount()
     {
-        await stream.WriteAsync(_bytes.AsMemory(0, _bytesCount), cancellationToken);
-        if (HasAdditionalBytesFinishingTheLastRecord)
+        var bytes = new byte[_bytesCount + _lastRecordBytes.Count];
+        Array.Copy(_bytes, 0, bytes, 0, _bytesCount);
+        if(HasAdditionalBytesFinishingTheLastRecord)
         {
-            await stream.WriteAsync(_lastRecordBytes.ToArray().AsMemory(), cancellationToken);
+            Array.Copy(_lastRecordBytes.ToArray(), 0, bytes, _bytesCount, _lastRecordBytes.Count);
         }
+        return (bytes, _recordsCount);
     }
 
     public void Clear()
     {
         _lastRecordBytes.Clear();
-        RecordsCount = 0;
+        
         _bytesCount = 0;
+        _recordsCount = 0;
     }
 }

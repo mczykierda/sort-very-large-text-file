@@ -23,40 +23,28 @@ public class BufferTests
     [InlineData(25, "1234567890\r\n0987654321\r\nabcdefghij", "", 3, 0)]
     [InlineData(26, "1234567890\r\n0987654321\r\nabcdefghij", "", 3, 0)]
     [InlineData(100, "1234567890\r\n0987654321\r\nabcdefghij", "", 3, 0)]
-    public async Task WhenReadingBuffer_DealsWithEndOfLine(int fileSize, string text1, string text2, int recordCount1, int recordCount2)
+    public void WhenReadingBuffer_DealsWithEndOfLine(int fileSize, string text1, string text2, int recordCount1, int recordCount2)
     {
         var sb = new StringBuilder();
         sb.AppendLine("1234567890");
         sb.AppendLine("0987654321");
-        sb.AppendLine("abcdefghij");
+        sb.Append("abcdefghij");
 
 
-        var sut = new VeryLargeTextFile.Sorter.FileSplitting.Buffer(new InputFileSplitterConfig(fileSize, "gecge"));
+        var sut = new VeryLargeTextFile.Sorter.FileSplitting.Buffer(new InputFileSplitterConfig(fileSize, "bhjyrtebhyetbeyt"));
 
         using var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
+        
         sut.ReadFromStream(inputStream);
-
-        using var outputStream1 = new MemoryStream();
-        await sut.SaveToStream(outputStream1, CancellationToken.None);
-
-        sut.RecordsCount.Should().Be(recordCount1);
+        var (b1,rc1) = sut.GetBytesAndRecordsCount();
+        rc1.Should().Be(recordCount1);
+        Encoding.UTF8.GetString(b1).Should().Be(text1);
         sut.Clear();
 
         sut.ReadFromStream(inputStream);
-
-        using var outputStream2 = new MemoryStream();
-        await sut.SaveToStream(outputStream2, CancellationToken.None);
-
-        sut.RecordsCount.Should().Be(recordCount2);
+        var (b2, rc2) = sut.GetBytesAndRecordsCount();
+        rc2.Should().Be(recordCount2);
+        Encoding.UTF8.GetString(b2).Should().Be(text2);
         sut.Clear();
-
-        var bytes1 = outputStream1.GetBuffer();
-        var actualText1 = Encoding.UTF8.GetString(bytes1, 0, (int)outputStream1.Position);
-
-        var bytes2 = outputStream2.GetBuffer();
-        var actualText2 = Encoding.UTF8.GetString(bytes2, 0, (int)outputStream2.Position);
-
-        actualText1.Should().Be(text1);
-        actualText2.Should().Be(text2);
     }
 }

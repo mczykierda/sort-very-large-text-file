@@ -9,27 +9,39 @@ class SortedFilesMerger(
     ILogger<SortedFilesMerger> logger
     ) : ISortedFilesMerger
 {
-    public async Task<FileInfo> MergeFiles(IReadOnlyCollection<FileInfo> initialSortedFiles, MergeConfig config, CancellationToken cancellationToken)
+    public FileInfo MergeFiles(IReadOnlyCollection<FileInfo> initialSortedFiles, MergeConfig config, CancellationToken cancellationToken)
     {
         using var executionTimer = new ExecutionTimer(logger, $"Merging step");
 
         logger.LogDebug("Merging {count} files...", initialSortedFiles.Count);
         var queue = new SortedFilesQueue(initialSortedFiles, config);
-
         var mergeRunCounter = 0;
+
         while (queue.HasFilesToMerge)
         {
-            var filesToMerge = queue.GetNextBatchOfFilesToMerge();
-            var mergedFile = await merger.MergeFiles(filesToMerge, mergeRunCounter, cancellationToken);
-
-            if(!queue.HasFilesToMerge)
+            if (queue.Count == 1)
             {
-                logger.LogDebug("No more files to merge. Final file: {file}", mergedFile.Name);
-                return mergedFile;
+                var files = queue.GetNextBatchOfFilesToMerge();
+                logger.LogDebug("No more files to merge. Final file: {file}", files.Single().Name);
+                return files.Single();
             }
-            queue.AddMergedFile(mergedFile);
-            mergeRunCounter++;
-            logger.LogDebug("There are other files to merge with, adding {file} to queue of files to merge", mergedFile.Name);
+
+            var tasks = new List<Task>();
+            while (queue.HasFilesToMerge)
+            {
+                var filesToMerge = queue.GetNextBatchOfFilesToMerge();
+                
+                var t = Task.Run(async () =>
+                                {
+                                    var thisMergeRunCounter = Interlocked.Increment(ref mergeRunCounter);
+                                    var mergedFile = await merger.MergeFiles(filesToMerge, thisMergeRunCounter, cancellationToken);
+                                    queue.AddMergedFile(mergedFile);
+
+                                },
+                                cancellationToken);
+                tasks.Add(t);
+            }
+            Task.WaitAll([.. tasks], cancellationToken);
         }
 
         throw new Exception("Should never happen!");
