@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using VeryLargeTextFile.Sorter.Merging.SingleRun;
+using VeryLargeTextFile.Utilities;
 
 namespace VeryLargeTextFile.Sorter.Merging;
 
@@ -10,6 +11,8 @@ class SortedFilesMerger(
 {
     public async Task<FileInfo> MergeFiles(IReadOnlyCollection<FileInfo> initialSortedFiles, MergeConfig config, CancellationToken cancellationToken)
     {
+        using var executionTimer = new ExecutionTimer(logger, $"Merging step");
+
         logger.LogDebug("Merging {count} files...", initialSortedFiles.Count);
         var queue = new SortedFilesQueue(initialSortedFiles, config);
 

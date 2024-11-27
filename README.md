@@ -10,14 +10,14 @@ dotnet publish -c Release
 cd VeryLargeTextFile\bin\Release\net8.0\publish\
 ```
 
-Generate file of size 1GB with verbose output to console
+Generate file of size 10GB
 ```
-vltf generate -f large_file.txt -v
+vltf generate -f large_file.txt
 ```
 
 Sort the file to get `large_file.txt.sorted` next to original file
 ```
-vltf sort -f large_file.txt -oof -v
+vltf sort -f large_file.txt -oof
 ```
 
 Feel free to display help:

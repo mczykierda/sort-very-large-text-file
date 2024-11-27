@@ -6,7 +6,7 @@ public class Buffer(InputFileSplitterConfig config)
     static readonly byte[] PossibleEndOfLineCharacters = [(byte)'\n', (byte)'\r'];
 
     readonly byte[] _bytes = new byte[config.FileSize];
-    readonly List<byte> _lastRecordBytes = new(1024);
+    readonly List<byte> _lastRecordBytes = new(2 * 1024);
 
     public int RecordsCount { get; private set; }
     int _bytesCount = 0;

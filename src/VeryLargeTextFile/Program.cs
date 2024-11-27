@@ -32,7 +32,7 @@ class Program
 
         var fileSizeOption = new Option<long>(
             ["--file-size", "-fs"],
-            () => 1024 * 1024 * 1024,
+            () => 10737418240, //10 gb
             $"Approximate size of file in bytes.");
 
         var textSizeOption = new Option<int>(
@@ -121,7 +121,7 @@ class Program
 
         var mergeRunFileCountOption = new Option<int>(
             ["--merge-run-file-count", "-mrfc"],
-            () => 10,
+            () => 16,
             "The number of files merged together during single run of merging");
         
         var overwriteOutputFileOption = new Option<bool>(
@@ -154,7 +154,7 @@ class Program
                     var splittedFilesLocation = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                     var config = new FileSortingConfig(
                         new InputFileSplitterConfig(splittedFileSize, splittedFilesLocation),
-                        new SortConfig(Math.Max(Environment.ProcessorCount / 2, 2)),
+                        new SortConfig(Math.Max(Environment.ProcessorCount, 2)),
                         new MergeConfig(mergeRunFileCount),
                         overwriteOutputFile
                         );
@@ -190,7 +190,7 @@ class Program
         services.AddLogging(builder => builder
                                         .AddFilter("Microsoft", LogLevel.Warning)
                                         .AddFilter("System", LogLevel.Warning)
-                                        .SetMinimumLevel(verboseLogging ? LogLevel.Trace : LogLevel.Warning)
+                                        .SetMinimumLevel(verboseLogging ? LogLevel.Trace : LogLevel.Information)
                                         .AddSimpleConsole(x => {
                                             x.SingleLine = true;
                                             x.IncludeScopes = false;

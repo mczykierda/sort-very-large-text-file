@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using VeryLargeTextFile.Sorter.FileSplitting;
+using VeryLargeTextFile.Utilities;
 
 namespace VeryLargeTextFile.Sorter.SplittedFilesSorting;
 
@@ -11,6 +12,8 @@ class SplittedFilesSorter(
 {
     public IReadOnlyCollection<FileInfo> SortFilesAndSave(SplittingResult splitting, SortConfig config, CancellationToken cancellationToken)
     {
+        using var executionTimer = new ExecutionTimer(logger, $"Sorting step");
+
         var result = new List<FileInfo>();
 
         using (var semaphore = new SemaphoreSlim(config.MaxParallelSortingTasks))

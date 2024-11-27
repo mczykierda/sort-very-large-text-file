@@ -12,6 +12,8 @@ class InputFileSplitter(
 {
     public async Task<SplittingResult> SplitInputFileIntoSmallerFilesAndSortThem(FileInfo inputFileInfo, InputFileSplitterConfig config, CancellationToken cancellationToken)
     {
+        using var executionTimer = new ExecutionTimer(logger, $"Splitting step");
+
         tempFolder.Create(config);
 
         var result = new List<SplittedFile>();
