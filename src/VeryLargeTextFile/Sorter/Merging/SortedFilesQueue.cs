@@ -40,7 +40,7 @@ public class SortedFilesQueue(
         return result;
     }
 
-    public bool HasFilesToMerge => _files.Count > 0;
+    public bool HasFilesToMerge => !_files.IsEmpty;
     public int Count => _files.Count;
 
     public void AddMergedFile(FileInfo file)
