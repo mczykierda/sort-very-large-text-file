@@ -69,11 +69,10 @@ class InputFileSplitter(
 
         Array.Sort(rows, comparer);
 
-
-
         var splittedFileInfo = tempFolder.GetFileInfoForSplittedFile(currentFileNumber);
-        logger.LogDebug("Saving to file {file}", splittedFileInfo.Name);
         await using var streamWriter = new StreamWriter(outputFileStreamFactory.CreateOutputStream(splittedFileInfo));
+
+        logger.LogDebug("Saving to file {file}", splittedFileInfo.Name);
         bool firstLoop = true;
         foreach (var row in rows.Where(x => x is not null))
         {
